@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"C:/Users/fatum/OneDrive/Desktop/claude-code/정주연\" show HEAD:ReadMe.md)",
+      "Bash(git -C \"C:/Users/fatum/OneDrive/Desktop/claude-code/정주연\" diff --cached -- ReadMe.md)",
+      "Skill(claude-api)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(claude plugin:*)",
+      "WebFetch(domain:www.claudepluginhub.com)",
+      "Skill(discord:configure)",
+      "Bash(bash .claude/hooks/apply-discord-config.sh)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c ':*)",
+      "Bash(python3:*)",
+      "Bash(gws calendar:*)",
+      "Bash(cat \"C:/Users/fatum/OneDrive/Desktop/claude-code/정주연/.claude/skills/gws-calendar/\"*)",
+      "Bash(gws --version)",
+      "Bash(powershell:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "discord@claude-plugins-official": true
+  }
+}

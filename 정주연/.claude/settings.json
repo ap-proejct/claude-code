@@ -1,0 +1,34 @@
+{
+  "model": "opusplan",
+  "enabledPlugins": {
+  },
+  "mcpServers": {
+    "discord": {
+      "command": "bun",
+      "args": [
+        "run",
+        "--cwd",
+        "C:/Users/fatum/.claude/plugins/cache/claude-plugins-official/discord/0.0.4",
+        "--shell=bun",
+        "--silent",
+        "start"
+      ],
+      "env": {
+        "DISCORD_STATE_DIR": "C:/Users/fatum/.claude/channels/discord"
+      }
+    }
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/apply-discord-config.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
