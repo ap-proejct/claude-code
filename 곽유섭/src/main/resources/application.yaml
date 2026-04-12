@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: BillAlarmBot
+  datasource:
+    url: jdbc:mysql://localhost:3306/billalarmbot?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: billalarm
+    password: ${MYSQL_PASSWORD:billalarm1234}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+google:
+  credentials:
+    path: ${GOOGLE_CREDENTIALS_PATH}
+  sheets:
+    spreadsheet-id: ${SPREADSHEET_ID}
+  calendar:
+    id: ${CALENDAR_ID}
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+    chat-id: ${TELEGRAM_CHAT_ID}
+
+scheduler:
+  cron: ${SCHEDULER_CRON:0 0 9 * * *}
+
+logging:
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%logger{0}] : %msg%n"
+  level:
+    org.hibernate.orm.jdbc.bind: trace

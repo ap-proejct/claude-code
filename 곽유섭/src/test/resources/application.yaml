@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+
+google:
+  credentials:
+    path: billalarmbot-88f7fdf6bc4b.json
+  sheets:
+    spreadsheet-id: test
+  calendar:
+    id: test
+
+telegram:
+  bot:
+    token: dummy-token
+    chat-id: "0"
+
+scheduler:
+  cron: "0 0 9 * * *"

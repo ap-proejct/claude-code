@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: billalarmbot-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root1234}
+      MYSQL_DATABASE: billalarmbot
+      MYSQL_USER: billalarm
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-billalarm1234}
+    ports:
+      - "3306:3306"
+    volumes:
+      - billalarmbot-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  billalarmbot-mysql-data:
