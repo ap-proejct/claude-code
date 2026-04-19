@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(pageTitle=${group.name}, content=~{::main-content})}">
+<body>
+  <th:block th:fragment="main-content">
+
+    <!-- 헤더 -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+          <a th:href="@{/groups}" class="hover:text-gray-800 transition-colors">그룹</a>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+        <h1 class="text-xl font-semibold text-gray-900" th:text="${group.name}"></h1>
+        <p class="text-sm text-gray-500 mt-0.5" th:text="${group.description}" th:if="${group.description}"></p>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- OWNER/MANAGER만 멤버 초대 가능 -->
+        <button id="btn-invite" th:if="${myRole == 'OWNER' or myRole == 'MANAGER'}" class="btn-primary">
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            멤버 초대
+          </span>
+        </button>
+        <!-- OWNER만 해산 가능 -->
+        <button id="btn-dissolve" th:if="${myRole == 'OWNER'}" class="btn-danger">그룹 해산</button>
+        <!-- OWNER가 아니면 탈퇴 가능 -->
+        <button id="btn-leave" th:unless="${myRole == 'OWNER'}" class="btn-secondary text-red-600 hover:bg-red-50 border-red-200">탈퇴</button>
+      </div>
+    </div>
+
+    <!-- 멤버 목록 -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div class="px-5 py-3 border-b border-gray-200 bg-gray-50">
+        <h2 class="text-sm font-medium text-gray-700">멤버 <span class="text-gray-400" th:text="${#lists.size(members)}"></span>명</h2>
+      </div>
+      <ul class="divide-y divide-gray-100">
+        <li th:each="m : ${members}" class="flex items-center justify-between px-5 py-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+              <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-800" th:text="'사용자 #' + ${m.userId}"></p>
+              <span class="inline-block text-xs px-2 py-0.5 rounded-full mt-0.5"
+                    th:classappend="${m.groupRole == 'OWNER'} ? 'bg-blue-100 text-blue-700' : (${m.groupRole == 'MANAGER'} ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600')"
+                    th:text="${m.groupRole == 'OWNER'} ? '오너' : (${m.groupRole == 'MANAGER'} ? '매니저' : '멤버')">
+              </span>
+            </div>
+          </div>
+          <!-- OWNER가 다른 멤버 관리 -->
+          <div th:if="${myRole == 'OWNER' and m.userId != currentUserId}" class="flex items-center gap-2">
+            <select class="select-role text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-700"
+                    th:data-user-id="${m.userId}"
+                    th:data-group-id="${group.id}">
+              <option value="MANAGER" th:selected="${m.groupRole == 'MANAGER'}">매니저</option>
+              <option value="MEMBER" th:selected="${m.groupRole == 'MEMBER'}">멤버</option>
+            </select>
+            <button class="btn-kick text-xs px-3 py-1 rounded-lg bg-red-50 border border-red-200 text-red-700 hover:bg-red-100"
+                    th:data-user-id="${m.userId}"
+                    th:data-group-id="${group.id}">
+              추방
+            </button>
+          </div>
+          <!-- MANAGER가 일반 멤버 추방 -->
+          <div th:if="${myRole == 'MANAGER' and m.groupRole == 'MEMBER' and m.userId != currentUserId}">
+            <button class="btn-kick text-xs px-3 py-1 rounded-lg bg-red-50 border border-red-200 text-red-700 hover:bg-red-100"
+                    th:data-user-id="${m.userId}"
+                    th:data-group-id="${group.id}">
+              추방
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 멤버 초대 모달 -->
+    <div id="modal-invite"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 class="text-base font-semibold">멤버 초대</h2>
+          <button id="close-modal-invite" class="p-1 rounded hover:bg-gray-100">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="px-6 py-4 space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">사용자 ID</label>
+            <input type="number" id="input-invite-user-id" class="input-field" placeholder="초대할 사용자 ID를 입력하세요">
+            <p class="text-xs text-gray-400 mt-1">사용자 ID는 관리자에게 문의하세요.</p>
+          </div>
+          <div class="flex gap-2 justify-end pt-2">
+            <button id="cancel-invite" class="btn-secondary">취소</button>
+            <button id="confirm-invite" class="btn-primary">초대</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      const groupId = /*[[${group.id}]]*/ 0;
+
+      // ── 그룹 해산 ──
+      $('#btn-dissolve').on('click', async () => {
+        if (!confirm('그룹을 해산하면 복구할 수 없습니다. 계속하시겠습니까?')) return;
+        const res = await apiFetch(`/api/groups/${groupId}`, 'DELETE');
+        if (res.ok) location.href = '/groups';
+        else alert('그룹 해산에 실패했습니다.');
+      });
+
+      // ── 그룹 탈퇴 ──
+      $('#btn-leave').on('click', async () => {
+        if (!confirm('그룹에서 탈퇴하시겠습니까?')) return;
+        const myId = /*[[${currentUserId}]]*/ 0;
+        const res = await apiFetch(`/api/groups/${groupId}/members/${myId}`, 'DELETE');
+        if (res.ok) location.href = '/groups';
+        else alert('탈퇴에 실패했습니다.');
+      });
+
+      // ── 멤버 초대 모달 ──
+      const $modalInvite = $('#modal-invite');
+      const $inputUserId = $('#input-invite-user-id');
+
+      $('#btn-invite').on('click', () => {
+        $inputUserId.val('');
+        $modalInvite.removeClass('hidden');
+        $inputUserId.focus();
+      });
+      $('#close-modal-invite, #cancel-invite').on('click', () => $modalInvite.addClass('hidden'));
+      $('#confirm-invite').on('click', async () => {
+        const userId = parseInt($inputUserId.val());
+        if (!userId) { $inputUserId.focus(); return; }
+        const res = await apiFetch(`/api/groups/${groupId}/invitations`, 'POST', { userId });
+        if (res.ok) {
+          $modalInvite.addClass('hidden');
+          alert('초대장이 전송됐습니다. 상대방이 수락하면 멤버로 추가됩니다.');
+        } else {
+          const data = await res.json();
+          alert(data?.error?.message || '초대에 실패했습니다.');
+        }
+      });
+      $inputUserId.on('keydown', e => { if (e.key === 'Enter') $('#confirm-invite').trigger('click'); });
+
+      // ── 멤버 추방 ──
+      $('.btn-kick').on('click', async function() {
+        const userId = $(this).data('user-id');
+        if (!confirm('이 멤버를 추방하시겠습니까?')) return;
+        const res = await apiFetch(`/api/groups/${groupId}/members/${userId}`, 'DELETE');
+        if (res.ok) location.reload();
+        else alert('추방에 실패했습니다.');
+      });
+
+      // ── 역할 변경 ──
+      $('.select-role').on('change', async function() {
+        const userId = $(this).data('user-id');
+        const res = await apiFetch(`/api/groups/${groupId}/members/${userId}/role`, 'PATCH', { role: $(this).val() });
+        if (!res.ok) {
+          alert('역할 변경에 실패했습니다.');
+          location.reload();
+        }
+      });
+    </script>
+  </th:block>
+</body>
+</html>

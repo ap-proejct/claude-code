@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(pageTitle='중요 항목', content=~{::main-content})}">
+<body>
+  <th:block th:fragment="main-content">
+
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-semibold text-gray-900">중요 항목</h1>
+    </div>
+
+    <!-- 비어있을 때 -->
+    <div th:if="${#lists.isEmpty(files)}" class="flex items-center justify-center h-64 text-gray-400">
+      <div class="text-center">
+        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+        </svg>
+        <p class="text-sm">중요 항목이 없습니다.</p>
+        <p class="text-xs text-gray-400 mt-1">파일을 선택하고 별표를 클릭하면 여기에 표시됩니다.</p>
+      </div>
+    </div>
+
+    <!-- Tailwind 동적 클래스 safelist -->
+    <span class="hidden ring-2 ring-blue-500 bg-blue-50"></span>
+
+    <!-- 파일 그리드 -->
+    <div th:unless="${#lists.isEmpty(files)}" id="file-grid"
+         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div th:each="file : ${files}"
+           class="card p-3 cursor-pointer group relative select-none transition-all"
+           th:data-id="${file.id}"
+           th:data-name="${file.name}"
+           th:data-type="${file.type}">
+        <div class="flex justify-center mb-2">
+          <svg th:if="${file.type.name() == 'FOLDER'}"
+               class="w-12 h-12 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+          </svg>
+          <svg th:unless="${file.type.name() == 'FOLDER'}"
+               class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="text-xs text-center truncate text-gray-700" th:text="${file.name}"></p>
+      </div>
+    </div>
+
+    <!-- 파일 정보 패널 -->
+    <div id="preview-panel"
+         class="hidden fixed right-0 top-0 h-full w-64 bg-white border-l border-gray-200 shadow-xl z-40 flex flex-col">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
+        <p id="preview-title" class="text-sm font-medium text-gray-900 truncate flex-1 mr-2"></p>
+        <button id="close-preview" class="p-1 rounded hover:bg-gray-100 shrink-0">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 flex flex-col items-center justify-center gap-3 p-6">
+        <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p id="preview-filename" class="text-sm text-gray-500 text-center break-all"></p>
+      </div>
+      <div class="border-t border-gray-200 p-4 space-y-2 shrink-0">
+        <button id="btn-panel-preview"
+                class="w-full flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          미리보기
+        </button>
+        <a id="btn-panel-download" href="#" target="_blank"
+           class="w-full flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          다운로드
+        </a>
+        <button id="btn-panel-unstar"
+                class="w-full flex items-center gap-2 px-4 py-2 bg-white text-yellow-600 border border-yellow-300 rounded-lg hover:bg-yellow-50 transition-colors text-sm font-medium">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+          중요 해제
+        </button>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      let $selectedCard = null;
+      let activeFileId = null;
+
+      const $previewPanel = $('#preview-panel');
+
+      function deselectAll() {
+        if ($selectedCard) {
+          $selectedCard.removeClass('ring-2 ring-blue-500 bg-blue-50');
+          $selectedCard = null;
+        }
+        $previewPanel.addClass('hidden');
+      }
+
+      $('.card').on('click', function(e) {
+        e.stopPropagation();
+        const $card = $(this);
+        if ($selectedCard && $selectedCard[0] === $card[0]) { deselectAll(); return; }
+        if ($selectedCard) $selectedCard.removeClass('ring-2 ring-blue-500 bg-blue-50');
+
+        $selectedCard = $card;
+        $card.addClass('ring-2 ring-blue-500 bg-blue-50');
+        activeFileId = $card.data('id');
+
+        $('#preview-title').text($card.data('name'));
+        $('#preview-filename').text($card.data('name'));
+        $('#btn-panel-download').attr('href', `/api/files/${activeFileId}/download`);
+        $previewPanel.removeClass('hidden');
+      }).on('dblclick', function() {
+        if ($(this).data('type') === 'FOLDER') location.href = `/drive/folder/${$(this).data('id')}`;
+      });
+
+      $('#close-preview').on('click', deselectAll);
+
+      $('#btn-panel-preview').on('click', () => {
+        if (activeFileId) window.open(`/api/files/${activeFileId}/preview`, '_blank');
+      });
+
+      $('#btn-panel-unstar').on('click', async () => {
+        if (!activeFileId) return;
+        const res = await apiFetch(`/api/files/${activeFileId}/star`, 'PATCH');
+        if (res.ok) location.reload();
+        else alert('중요 해제에 실패했습니다.');
+      });
+
+      $(document).on('click', e => {
+        if (!$(e.target).closest('.card, #preview-panel').length) deselectAll();
+      });
+    </script>
+  </th:block>
+</body>
+</html>

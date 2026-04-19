@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(pageTitle='그룹', content=~{::main-content})}">
+<body>
+  <th:block th:fragment="main-content">
+
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-semibold text-gray-900">내 그룹</h1>
+      <button id="btn-new-group" class="btn-primary">
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          그룹 만들기
+        </span>
+      </button>
+    </div>
+
+    <!-- 그룹이 없을 때 -->
+    <div th:if="${#lists.isEmpty(groups)}" class="flex items-center justify-center h-64 text-gray-400">
+      <div class="text-center">
+        <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <p class="text-sm">참여 중인 그룹이 없습니다.</p>
+        <p class="text-xs text-gray-400 mt-1">그룹을 만들어 파일을 공유해보세요.</p>
+      </div>
+    </div>
+
+    <!-- 그룹 목록 -->
+    <div th:unless="${#lists.isEmpty(groups)}"
+         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a th:each="group : ${groups}"
+         th:href="@{/groups/{id}(id=${group.id})}"
+         class="card p-5 block hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900" th:text="${group.name}"></p>
+              <p class="text-xs text-gray-500 mt-0.5 line-clamp-1"
+                 th:text="${group.description ?: '설명 없음'}"></p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- 그룹 생성 모달 -->
+    <div id="modal-new-group"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 class="text-base font-semibold">새 그룹 만들기</h2>
+          <button id="close-modal-group" class="p-1 rounded hover:bg-gray-100">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="px-6 py-4 space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">그룹 이름 <span class="text-red-500">*</span></label>
+            <input type="text" id="input-group-name" class="input-field" placeholder="그룹 이름을 입력하세요">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">설명 (선택)</label>
+            <input type="text" id="input-group-desc" class="input-field" placeholder="그룹 설명을 입력하세요">
+          </div>
+          <div class="flex gap-2 justify-end pt-2">
+            <button id="cancel-group" class="btn-secondary">취소</button>
+            <button id="confirm-group" class="btn-primary">만들기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      const $modal = $('#modal-new-group');
+      const $inputName = $('#input-group-name');
+      const $inputDesc = $('#input-group-desc');
+
+      $('#btn-new-group').on('click', () => {
+        $inputName.val('');
+        $inputDesc.val('');
+        $modal.removeClass('hidden');
+        $inputName.focus();
+      });
+      $('#close-modal-group, #cancel-group').on('click', () => $modal.addClass('hidden'));
+
+      $('#confirm-group').on('click', async () => {
+        const name = $inputName.val().trim();
+        if (!name) { $inputName.focus(); return; }
+        const res = await apiFetch('/api/groups', 'POST', { name, description: $inputDesc.val().trim() || null });
+        if (res.ok) {
+          const data = await res.json();
+          location.href = `/groups/${data.data.id}`;
+        } else {
+          alert('그룹 생성에 실패했습니다.');
+        }
+      });
+
+      $inputName.on('keydown', e => { if (e.key === 'Enter') $('#confirm-group').trigger('click'); });
+    </script>
+  </th:block>
+</body>
+</html>

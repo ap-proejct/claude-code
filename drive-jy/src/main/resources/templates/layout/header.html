@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="header" class="h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4 shrink-0">
+  <div class="flex-1">
+    <input type="search" placeholder="Drive에서 검색"
+           class="w-full max-w-xl px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-colors">
+  </div>
+  <div class="flex items-center gap-3">
+
+    <!-- 벨 알림 -->
+    <div class="relative" id="bell-container">
+      <button id="bell-btn"
+              class="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="알림">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <!-- 배지 -->
+        <span id="bell-badge"
+              th:if="${pendingInvitationCount > 0}"
+              th:text="${pendingInvitationCount}"
+              class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+        </span>
+      </button>
+
+      <!-- 드롭다운 -->
+      <div id="bell-dropdown"
+           class="hidden absolute right-0 top-10 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+          <span class="text-sm font-semibold text-gray-800">그룹 초대 알림</span>
+          <span id="bell-count" class="text-xs text-gray-400"></span>
+        </div>
+        <div id="bell-list" class="max-h-72 overflow-y-auto divide-y divide-gray-100">
+          <p id="bell-empty" class="hidden text-sm text-gray-400 text-center py-6">새 초대가 없습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <span sec:authentication="name" class="text-sm text-gray-700"></span>
+    <form th:action="@{/auth/logout}" method="post" class="inline">
+      <button type="submit" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+        로그아웃
+      </button>
+    </form>
+  </div>
+</header>
+
+<script th:fragment="bell-script">
+(function() {
+  const bellBtn = document.getElementById('bell-btn');
+  const dropdown = document.getElementById('bell-dropdown');
+  const bellList = document.getElementById('bell-list');
+  const bellEmpty = document.getElementById('bell-empty');
+  const bellCount = document.getElementById('bell-count');
+  const bellBadge = document.getElementById('bell-badge');
+  if (!bellBtn) return;
+
+  let loaded = false;
+
+  bellBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+    if (!dropdown.classList.contains('hidden') && !loaded) {
+      await loadInvitations();
+      loaded = true;
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!document.getElementById('bell-container').contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  async function loadInvitations() {
+    const res = await apiFetch('/api/invitations', 'GET');
+    if (!res.ok) return;
+    const data = await res.json();
+    const items = data.data || [];
+    bellCount.textContent = `${items.length}건`;
+    if (items.length === 0) {
+      bellEmpty.classList.remove('hidden');
+      return;
+    }
+    bellEmpty.classList.add('hidden');
+    items.forEach(inv => {
+      const div = document.createElement('div');
+      div.className = 'px-4 py-3 flex flex-col gap-1.5';
+      div.innerHTML = `
+        <p class="text-sm text-gray-800"><span class="font-medium">${escHtml(inv.inviterName)}</span>님이 <span class="font-medium">${escHtml(inv.groupName)}</span> 그룹에 초대했습니다.</p>
+        <p class="text-xs text-gray-400">${escHtml(inv.createdAt)}</p>
+        <div class="flex gap-2 mt-0.5">
+          <button data-id="${inv.id}" data-action="accept"
+                  class="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">수락</button>
+          <button data-id="${inv.id}" data-action="reject"
+                  class="text-xs px-3 py-1.5 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">거부</button>
+        </div>
+      `;
+      div.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          const r = await apiFetch(`/api/invitations/${id}/${action}`, 'POST');
+          if (r.ok) {
+            div.remove();
+            const remaining = bellList.querySelectorAll('div[class]').length;
+            if (remaining === 0) bellEmpty.classList.remove('hidden');
+            if (bellBadge) {
+              const cur = parseInt(bellBadge.textContent) - 1;
+              if (cur <= 0) bellBadge.remove();
+              else bellBadge.textContent = cur;
+            }
+          } else {
+            alert('처리에 실패했습니다.');
+          }
+        });
+      });
+      bellList.appendChild(div);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
+</script>
+</body>
+</html>

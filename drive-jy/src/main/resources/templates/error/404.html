@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Drive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="text-center">
+    <p class="text-6xl font-bold text-gray-200 mb-4">404</p>
+    <h1 class="text-xl font-semibold text-gray-800 mb-2">페이지를 찾을 수 없습니다</h1>
+    <p class="text-sm text-gray-500 mb-8"
+       th:text="${message} ?: '요청하신 페이지가 존재하지 않거나 이동되었습니다.'"></p>
+    <a href="/drive" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors">
+      내 드라이브로 이동
+    </a>
+  </div>
+</body>
+</html>

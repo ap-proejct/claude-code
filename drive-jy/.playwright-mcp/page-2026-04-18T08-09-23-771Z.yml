@@ -1,0 +1,21 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img [ref=e5]
+    - heading "Drive" [level=1] [ref=e7]
+    - paragraph [ref=e8]: 새 계정 만들기
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: 이름
+        - textbox "홍길동" [ref=e13]
+      - generic [ref=e14]:
+        - generic [ref=e15]: 이메일
+        - textbox "example@email.com" [ref=e16]
+      - generic [ref=e17]:
+        - generic [ref=e18]: 비밀번호
+        - textbox "8자 이상" [ref=e19]
+      - button "회원가입" [ref=e20] [cursor=pointer]
+    - paragraph [ref=e21]:
+      - text: 이미 계정이 있으신가요?
+      - link "로그인" [ref=e22] [cursor=pointer]:
+        - /url: /auth/login

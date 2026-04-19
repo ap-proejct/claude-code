@@ -1,0 +1,22 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img [ref=e5]
+    - heading "Drive" [level=1] [ref=e7]
+    - paragraph [ref=e8]: 계속하려면 로그인하세요
+  - generic [ref=e9]:
+    - generic [ref=e10]: 이메일 또는 비밀번호가 올바르지 않습니다.
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: 이메일
+        - textbox "example@email.com" [ref=e14]
+      - generic [ref=e15]:
+        - generic [ref=e16]: 비밀번호
+        - textbox "비밀번호" [ref=e17]
+      - generic [ref=e18]:
+        - checkbox "로그인 유지 (7일)" [ref=e19]
+        - generic [ref=e20]: 로그인 유지 (7일)
+      - button "로그인" [ref=e21] [cursor=pointer]
+    - paragraph [ref=e22]:
+      - text: 계정이 없으신가요?
+      - link "회원가입" [ref=e23] [cursor=pointer]:
+        - /url: /auth/register

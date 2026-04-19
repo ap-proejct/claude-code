@@ -1,0 +1,14 @@
+{
+  "name": "drive-e2e",
+  "version": "1.0.0",
+  "description": "Google Drive 클론 E2E 테스트 (Playwright)",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
