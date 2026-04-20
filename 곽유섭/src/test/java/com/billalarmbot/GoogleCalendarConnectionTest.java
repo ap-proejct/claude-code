@@ -7,6 +7,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
@@ -14,8 +15,9 @@ import java.util.List;
 
 class GoogleCalendarConnectionTest {
 
-    private static final String CALENDAR_ID = "908d3619acc12abee1a9454cfc1831708102b4c7630386b0c51bf6dda951f4e8@group.calendar.google.com";
-    private static final String CREDENTIALS_PATH = "src/main/resources/billalarmbot-88f7fdf6bc4b.json";
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String CALENDAR_ID = dotenv.get("CALENDAR_ID");
+    private static final String CREDENTIALS_PATH = "src/main/resources/" + dotenv.get("GOOGLE_CREDENTIALS_PATH");
 
     @Test
     void calendar_연결_및_일정_생성() throws Exception {

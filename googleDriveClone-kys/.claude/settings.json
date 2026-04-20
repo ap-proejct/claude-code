@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/block-env-edit.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/block-dangerous-bash.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/compile-java.sh" },
+          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/lint-frontend.sh" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/mysql-status.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/recent-changes.sh" }
+        ]
+      }
+    ]
+  }
+}

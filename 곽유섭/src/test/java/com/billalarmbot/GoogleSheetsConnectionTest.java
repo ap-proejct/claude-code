@@ -5,6 +5,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
@@ -12,8 +13,9 @@ import java.util.List;
 
 class GoogleSheetsConnectionTest {
 
-    private static final String SPREADSHEET_ID = "1AHgl2U2T1sduE11QDm_dUVybtzSbPemvfiFKm29nPko";
-    private static final String CREDENTIALS_PATH = "src/main/resources/billalarmbot-88f7fdf6bc4b.json";
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String SPREADSHEET_ID = dotenv.get("SPREADSHEET_ID");
+    private static final String CREDENTIALS_PATH = "src/main/resources/" + dotenv.get("GOOGLE_CREDENTIALS_PATH");
 
     @Test
     void sheets_연결_및_데이터_읽기() throws Exception {
