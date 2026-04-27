@@ -66,7 +66,7 @@ IntelliJ에서 백엔드 실행 시 **Run Configuration의 Environment variables
 
 | 이메일 | 비밀번호 | 보안 질문 답변 |
 |--------|---------|------------|
-| test@test.com | test | test (질문: 가장 좋아하는 음식은?) |
+| test@test.com | testtest1 | test (질문: 가장 좋아하는 음식은?) |
 | rhkdbtj@test.com | (재설정 필요 시 `/forgot-password`) | test (질문 동일) |
 
 ---
@@ -93,9 +93,28 @@ IntelliJ에서 백엔드 실행 시 **Run Configuration의 Environment variables
   - `external-api` — S3, JWT, 이메일 연동
   - `security-reviewer` — 인증/권한 코드 보안 검토
 
+## 하네스 디렉토리 구조
+
+- `.claude/knowledge/` — 설계 결정·도메인 지식. 파일당 150줄 제한. `knowledge/antipatterns/` 는 안티패턴 초안 보관. `knowledge/e2e-flows.md` 는 Playwright MCP 수동 검증용 골든 패스
+- `.claude/plans/archived/` — 완료된 Plan 보관소. **아카이브 md 파일이 source of truth**. `INDEX.jsonl` 은 분석 실행 시 자동 재생성되는 캐시
+- `.claude/state/current-plan.md` — 현재 활성 플랜 포인터 (훅이 자동 갱신)
+- `.claude/logs/` — 도구 호출 JSONL (`activity-YYYY-MM.jsonl`, 커밋 제외)
+- `.claude/commands/` — 슬래시 커맨드: `/task-archive`, `/harness-trend`, `/antipattern-scan`, `/absorb`
+- `.claude/scripts/` — 슬래시 커맨드의 실제 실행 스크립트 (`plan-resync.sh` 가 md → INDEX 재생성)
+
+## 작업 단위 워크플로우
+
+1. **Plan 모드로 플랜 작성** → `track-active-plan.sh` 훅이 `state/current-plan.md` 에 포인터 기록 + 프론트매터 자동 주입 (`task_type: feat, title, created`)
+2. **필요 시 task_type 교정** → 기본값 `feat` 이 맞지 않으면 `fix|refactor|docs|test|chore` 중 교체
+3. **작업·검증 완료 후 `/task-archive`** → Claude 가 git diff·대화 맥락 기반으로 회고(구현 결과·변경 파일·E2E 검증·이슈·아쉬움) 를 플랜 파일 끝에 추가하고 `archived/` 로 이동. UI 변경이 있으면 Playwright MCP 로 골든 패스 실행 후 결과를 E2E 섹션에 기록 (`.claude/knowledge/e2e-flows.md` 참조). **점수는 이 시점에 매기지 않음** (`score: null`)
+4. **사용자 채점** — 나중에 `archived/YYYYMMDD-*.md` 를 열어 회고 읽고 프론트매터의 `score: null` 을 1~5 로 수정. 필요시 "사용자 채점 메모" 섹션에 의견 추가
+5. **분석**: `/harness-trend` 로 하네스 변경 효과 확인, `/antipattern-scan` 으로 저점 플랜 공통 패턴 추출. 두 커맨드 모두 실행 시 md → INDEX 자동 재동기화. 미채점(`score: null`) 플랜은 집계 제외
+6. **안티패턴 확정**: `knowledge/antipatterns/<초안>.md` 내용을 검토·편집한 뒤 `/absorb <파일명>` 실행 → `status: confirmed` 전환 + 소스 플랜들에 `absorbed: true` 주입 → 이후 트렌드·스캔 대상에서 제외
+
 ## 금지 사항
 
 - `.env` 파일 직접 편집 금지 (hook으로 차단됨)
 - 사용자 확인 없이 destructive git 명령 실행 금지 (`reset --hard`, `push --force`)
 - `node_modules`를 WSL/Windows 간 공유 금지
 - 커밋은 사용자가 명시적으로 요청할 때만
+- `.claude/knowledge/` 파일 150줄 초과 금지 — 초과 시 하위 디렉토리로 분할

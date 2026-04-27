@@ -4,13 +4,13 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/block-env-edit.sh" }
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-env-edit.sh" }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/block-dangerous-bash.sh" }
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-dangerous-bash.sh" }
         ]
       }
     ],
@@ -18,22 +18,32 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/compile-java.sh" },
-          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/lint-frontend.sh" }
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/compile-java.sh" },
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/lint-frontend.sh" },
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/check-md-length.sh" },
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/track-active-plan.sh" },
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/resync-on-archive-edit.sh" }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/log-activity.sh" }
         ]
       }
     ],
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/mysql-status.sh" }
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/mysql-status.sh" },
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/similar-plans.sh" }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "/mnt/c/googleDriveClone/.claude/hooks/recent-changes.sh" }
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/recent-changes.sh" }
         ]
       }
     ]

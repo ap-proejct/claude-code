@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--headless",
+        "--executable-path",
+        "/home/rhkdb/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome"
+      ]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - text: 📁
+    - heading "Google Drive" [level=1] [ref=e6]
+    - paragraph [ref=e7]: 클론 프로젝트
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e10]: 이메일
+      - textbox "example@email.com" [ref=e11]
+    - generic [ref=e12]:
+      - generic [ref=e13]: 비밀번호
+      - textbox "비밀번호 입력" [ref=e14]
+    - button "로그인" [ref=e15]
+  - paragraph [ref=e16]:
+    - link "비밀번호를 잊으셨나요?" [ref=e17] [cursor=pointer]:
+      - /url: /forgot-password
+  - paragraph [ref=e18]:
+    - text: 계정이 없으신가요?
+    - link "회원가입" [ref=e19] [cursor=pointer]:
+      - /url: /signup

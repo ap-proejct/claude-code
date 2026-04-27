@@ -1,0 +1,2 @@
+[POST] http://localhost:5173/api/files/upload => [201] Created
+[POST] http://localhost:5173/api/files/upload => [201] Created

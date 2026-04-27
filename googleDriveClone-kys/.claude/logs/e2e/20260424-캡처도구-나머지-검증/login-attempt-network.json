@@ -1,0 +1,2 @@
+[POST] http://localhost:5173/api/auth/login => [502] Bad Gateway
+  Request body: {"email":"test@test.com","password":"testtest1"}
